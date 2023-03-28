@@ -10,11 +10,16 @@ Model=load_model('E:\Project1\ISO_NON_ISO_Classifier_Model_13_94_acc.h5')
 import re
 from flask import Flask, request
 import time
+
+
 def check(web,timeout):
+  #timeout is specified by the user how long does he has to wait for a website to load. 
   start_time=time.time()
+  #Scrapping the website.
   res=requests.get(web,headers={"User-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A"},verify=False);
   soup = BeautifulSoup(res.text, "lxml")
   link=[]
+  #Getting URL for all the links to all other associated pages.
   for i in soup.findAll('a'):
       m=i.get('href')
       if m!=None:
@@ -25,7 +30,9 @@ def check(web,timeout):
               link.append(m)
         except:
           continue
+  #Removing Duplicates 
   link=set(link)
+  #Check URL for special conditions.
   if web.find('about')!=-1:
     web=web.split('about')
     web=web[0]
@@ -33,6 +40,7 @@ def check(web,timeout):
     web=web.split('index')
     web=web[0]
   ans=[]
+  #Getting only specific pages to scrap as mentioned below such as overview page , about us page , etc . 
   for i in link:
     if i!=None:
       m=i.lower()
@@ -43,8 +51,10 @@ def check(web,timeout):
           ans.append(web+i)
       else:
           ans.append(web)
+  #Removing Duplicates.
   ans=set(ans)
   images=[]
+  #Getting all the Image URL from the links . 
   for i in ans:
     try:
         res=requests.get(i,headers={"User-agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A"},verify=False);
@@ -66,14 +76,18 @@ def check(web,timeout):
                     images.append(web+i)
     except:
       continue
+  #Removing Duplicates.
   images=set(images)
   for i in images:
       i=i.strip('/')
       #print(i)
+      #if the function has taken more time than timeout break the loop and return -1 .
       if (time.time()-start_time)>timeout:
         return -1
         break
+      #We consider only png , jpeg , jpg format images and not taking into considering SVC or Gif type of images. 
       try:
+        # We are downloading the images and store them in their respective format below . 
        if i!=None:
           if i.find('.png')!=-1 and i.find('http')!=-1:
             #print(i)
@@ -110,11 +124,14 @@ def check(web,timeout):
             im=cv2.imread(r"E:\iso_v2\check.jpeg")
           else:
             continue
+          #resizing the image to fit to the model .
           im=cv2.resize(im,(256,256))
           #cv2.imshow('',im)
           #cv.waitkey(0)
+          #Predicting the outcome..
           yhat=Model.predict(np.expand_dims(im/255,0))
           print(yhat)
+          #if the predicted value is greater than 0.75 than return 1 and break loop .
           if np.argmax(yhat)==0:
             if yhat[0][0]>=0.75:
               print("ISO certified")

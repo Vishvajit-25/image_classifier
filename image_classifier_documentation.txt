@@ -1,0 +1,30 @@
+The Main objective of the Flask application is to check whether a particular website is ISO certified or not .
+
+To implement this we need a image classifier model which can detect whether the image is ISO certified. 
+
+We have created a classifier model with Keras with a accuracy of 94%. 
+
+The main backbone of the application is the script.py File 
+
+def check(web,timeout):
+	Arguments :
+	Two arguments are required which are the Website URL which you want to check
+	and the second argument is a timeout of variable which specifies how long do you want the function to run.
+	
+	Functionality :
+	We scrap the entered URL and extract all the Links to the other asscoiated pages.
+	Then we go through all this URL pages and the Homepages and collect are the Image URLs and append it to the list.
+	
+	After we collect the image URL we download those images one by one and check whether that image is ISO image
+	If it is ISO certified than it wil :
+		return 1 
+	if no image it detected as ISO than it will:
+		return 0
+	if elasped time is greater than the timeout than it will :
+		return -1 
+
+Moving on two the main app.py file:
+It takes value from the user and pass it on to check function with timeout value 
+Based on the Result of the function we decide the output .
+
+All the libraries required are listed in the requirements.txt File.
